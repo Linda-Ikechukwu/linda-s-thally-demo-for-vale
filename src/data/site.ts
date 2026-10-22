@@ -159,7 +159,7 @@ const brandPresets: Record<BrandPresetKey, BrandConfig> = {
 
 const brandPreset: BrandPresetKey = 'primary'
 
-export const siteConfig: SiteConfig = {
+const templateSiteConfig: SiteConfig = {
   name: 'Documentation',
   description:
     'Clear, task-focused guidance for building with the product.',
@@ -172,3 +172,17 @@ export const siteConfig: SiteConfig = {
   brandPreset,
   brandPresets,
 }
+
+// Managed by Thally Cloud onboarding.
+export const siteConfig: SiteConfig = {
+  ...templateSiteConfig,
+  name: "Linda's Thally Demo For Vale",
+  description: "A demo docs site built with Thally for a Developer Experience & Documentation Engineer assessment. It documents Vale, the open-source prose linter, for writers and developers who want to catch style issues automatically.",
+  repoUrl: "https://github.com/Linda-Ikechukwu/linda-s-thally-demo-for-vale",
+  links: [
+    { label: "Get started", href: "/quickstart" },
+    { label: "Support", href: "https://github.com/Linda-Ikechukwu/linda-s-thally-demo-for-vale/issues/new" },
+    { label: "GitHub", href: "https://github.com/Linda-Ikechukwu/linda-s-thally-demo-for-vale" },
+    { label: "Changelog", href: "/changelog" },
+  ],
+};
