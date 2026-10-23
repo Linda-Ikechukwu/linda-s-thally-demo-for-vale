@@ -1,0 +1,383 @@
+---
+title: How to add your organization's style guide to Vale
+navTitle: Add your style guide
+description: Turn your organization's style guide into Vale rules and share them across your repositories.
+---
+
+This guide shows you how to turn your organization's style guide into Vale rules and share them across your repositories.
+
+Published style guides like Google's cover general writing rules. Your organization's style guide covers what's specific to you, such as:
+
+| Category | Example | What to set up in Vale |
+| --- | --- | --- |
+| Product and feature names that aren't English words, so Vale doesn't recognize them | `Deploybot`, `acmectl` | A vocabulary of words Vale accepts as correct |
+| Abbreviations your audience already knows, so there's no need to spell them out | `SSO`, `ARR` | The same vocabulary |
+| Other companies' names, spelled their way | `GitHub`, not `Github` | The same vocabulary, which also enforces the spelling |
+| Terms you prefer | `sign in`, not `login` | A substitution rule |
+| Words you avoid | `simply`, `just` | An existence rule |
+| Inclusive terms your organization chose | `people`, not `guys`, and `main branch`, not `master branch` | A substitution rule |
+| Spelling and formatting choices that differ from a published style guide | Google and Microsoft style guides both use American spelling, the Oxford comma, and sentence-case headings, and spell out numbers below 10. A UK company might write British spelling instead, or a product team might always write numbers as numerals, like `5 users` | Turn off the published style guide's rule, and add one of your own |
+
+Most organizations start from a published style guide and add their own rules on top.
+
+## Before you begin
+
+You need:
+
+- Vale installed, as in the [quickstart](/quickstart)
+- A list of your organization's preferred writing rules
+- Your content in Git repositories, on a service like GitHub or GitLab
+
+In the steps below, replace `ORG_NAME` with your organization's name, like `Acme`. You'll use this name for your style package, your style, and your vocabulary, so it's easiest to keep it the same everywhere.
+
+## Part 1: Turn your style guide into Vale rules
+
+It's best practice to keep your rules in one repository, so every team uses the same rules and you only update them in one place.
+
+### 1. Create a repository for your rules
+
+Create a new repository for your rules. You can give it any name. This guide calls it `vale-style`. In it, create this layout:
+
+```text
+vale-style/
+└── ORG_NAME-style/
+    └── styles/
+        ├── ORG_NAME/
+        └── config/
+            └── vocabularies/
+                └── ORG_NAME/
+                    ├── accept.txt
+                    └── reject.txt
+```
+
+Vale looks for `styles`, `config`, and `vocabularies` by name, so those folder names must stay exactly as they are.
+
+You can name everything else however you like.
+
+- **`ORG_NAME-style/`** is your style package, the folder you publish in step 7 so other repositories can download it. It must have the same name as the `.zip` file you publish.
+- **`styles/`** holds styles. A style is a folder of rules, and a rule is a `.yml` file that checks for one kind of problem, like a word to replace.
+- **`styles/ORG_NAME/`** is your organization-wide style, for rules that apply to everything you publish. If a team has specific rules of its own, add another style folder next to it, like `styles/Marketing/`.
+- **`styles/config/`** holds everything that isn't a rule, like vocabularies.
+- **`config/vocabularies/ORG_NAME/`** is your organization-wide vocabulary. Put words Vale should accept in `accept.txt`, and words it should flag in `reject.txt`. For words only one team uses, you can add another subfolder under `vocabularies`, like `vocabularies/Marketing/`.
+
+For everything a style and `config` can hold, see [Styles](https://docs.vale.sh/topics/styles). For the full style package format, see [Packages](https://docs.vale.sh/keys/packages).
+
+### 2. Add your product names and banned words to the vocabulary
+
+Vale flags words it doesn't know as spelling mistakes, including your product names.
+
+In `accept.txt`, list every name and abbreviation your organization uses, one per line:
+
+```text ORG_NAME-style/styles/config/vocabularies/ORG_NAME/accept.txt
+Deploybot
+acmectl
+SSO
+ARR
+GitHub
+```
+
+Vale accepts these words, and because entries are case-sensitive, it also flags any other spelling. So with `GitHub` in the list, Vale tells writers to change "Github" to "GitHub." To accept a word in any case, start it with `(?i)`.
+
+In `reject.txt`, list words your organization never uses, one per line:
+
+```text ORG_NAME-style/styles/config/vocabularies/ORG_NAME/reject.txt
+synergy
+leverage
+enables
+```
+
+Vale flags these words as errors wherever they appear.
+
+Use `reject.txt` for words with no exceptions. If you want your own message, a suggested replacement, or a warning instead of an error, write a rule instead, as in steps 3 and 4.
+
+For more, see [Vocabularies](https://docs.vale.sh/keys/vocabularies).
+
+### 3. Write a rule for your preferred terms
+
+In `ORG_NAME-style/styles/ORG_NAME/`, create a file for your preferred terms, like `PreferredTerms.yml`.
+
+Under `swap`, add one line for each term your organization replaces, with the term to flag on the left and the replacement on the right:
+
+```yaml ORG_NAME-style/styles/ORG_NAME/PreferredTerms.yml
+extends: substitution
+message: "Use '%s' instead of '%s'."
+level: error
+ignorecase: true
+swap:
+  log ?in: sign in
+  dashboard: console
+  guys: everyone
+  master branch: main branch
+```
+
+The left side is a regular expression, so `log ?in` matches both "login" and "log in." Before you add a term, check that your published style guide doesn't already flag it, or writers see the same problem twice.
+
+Rules like this one are substitution rules, which find words and suggest the ones to use instead. Refer to the [substitution](https://docs.vale.sh/checks/substitution) reference for a full list of the settings a substitution rule can use.
+
+### 4. Write a rule for words to avoid
+
+For words your organization removes rather than replaces, create `Avoid.yml` in the same folder and list them under `tokens`:
+
+```yaml ORG_NAME-style/styles/ORG_NAME/Avoid.yml
+extends: existence
+message: "Remove '%s'. What's simple to you might not be simple to the reader."
+level: warning
+ignorecase: true
+tokens:
+  - simply
+  - just
+  - easily
+```
+
+Rules like this one are existence rules, which flag every word in their list. Refer to the [existence](https://docs.vale.sh/checks/existence) reference for a full list of the settings an existence rule can use.
+
+### 5. Add rules where you differ from a published style guide
+
+If your organization makes a different choice from your published style guide, write a rule for it.
+
+For example, Google spells out numbers below 10, but your organization might always use numerals. An existence rule flags the spelled-out numbers:
+
+```yaml ORG_NAME-style/styles/ORG_NAME/Numerals.yml
+extends: existence
+message: "Use a numeral instead of '%s'."
+level: warning
+ignorecase: true
+tokens:
+  - one
+  - two
+  - three
+  - four
+  - five
+  - six
+  - seven
+  - eight
+  - nine
+```
+
+Some choices only apply to part of your content.
+
+For example, you might use sentence-case headings in your docs, as Google does, but title case on your website. A capitalization rule checks for title case:
+
+```yaml ORG_NAME-style/styles/ORG_NAME/TitleCase.yml
+extends: capitalization
+message: "'%s' should use title case."
+level: warning
+scope: heading
+match: $title
+```
+
+In step 8, you'll turn this rule off for content that uses sentence-case headings. For other rule types you can use, see [Styles](https://docs.vale.sh/topics/styles).
+
+### 6. Test your rules
+
+Before other teams use your rules, check that they work. At the root of the `vale-style` repository, create a `.vale.ini` that points to your styles folder:
+
+```ini .vale.ini
+StylesPath = ORG_NAME-style/styles
+MinAlertLevel = suggestion
+Vocab = ORG_NAME
+
+[*.md]
+BasedOnStyles = Vale, ORG_NAME
+```
+
+Refer to the [`.vale.ini` reference](https://docs.vale.sh/topics/.vale.ini) for what each setting does, and for a full list of the settings you can use.
+
+Then create a `test.md` file with a sentence that breaks each of your rules, and run Vale on it:
+
+```markdown test.md
+# getting started with deploybot
+
+Hey guys, login to the dashboard and merge into the master branch.
+
+You can simply add five users with acmectl, SSO, and your Github account.
+```
+
+```bash
+vale test.md
+```
+
+Each rule should flag its own problem:
+
+```text Terminal
+ test.md
+ 1:3   warning  'getting started with deploybot' should use title case.                   ORG_NAME.TitleCase
+ 1:24  error    Use 'Deploybot' instead of 'deploybot'.                                   Vale.Terms
+ 3:5   error    Use 'everyone' instead of 'guys'.                                         ORG_NAME.PreferredTerms
+ 3:11  error    Use 'sign in' instead of 'login'.                                         ORG_NAME.PreferredTerms
+ 3:24  error    Use 'console' instead of 'dashboard'.                                     ORG_NAME.PreferredTerms
+ 3:53  error    Use 'main branch' instead of 'master branch'.                             ORG_NAME.PreferredTerms
+ 5:9   warning  Remove 'simply'. What's simple to you might not be simple to the reader.  ORG_NAME.Avoid
+ 5:20  warning  Use a numeral instead of 'five'.                                          ORG_NAME.Numerals
+ 5:59  error    Use 'GitHub' instead of 'Github'.                                         Vale.Terms
+
+✖ 6 errors, 3 warnings and 0 suggestions in 1 file.
+```
+
+Notice that "acmectl" and "SSO" aren't flagged, because they're in your vocabulary.
+
+If a rule doesn't flag what you expect, check the rule file's name and folder. Rule files in `ORG_NAME-style/styles/ORG_NAME/` show up as `ORG_NAME.<file name>` in the output.
+
+## Part 2: Share your rules across repositories
+
+To apply the style guide rules you've just written to other repositories where your organization's content lives, like your marketing website or your documentation, publish your `ORG_NAME-style` folder as a style package.
+
+### 7. Publish your rules as a style package
+
+From the root of the `vale-style` repository, zip your style package folder. If you're on macOS or Linux, run the following command:
+
+```bash
+zip -r ORG_NAME-style.zip ORG_NAME-style
+```
+
+On Windows, run this command in PowerShell instead:
+
+```powershell
+Compress-Archive -Path ORG_NAME-style -DestinationPath ORG_NAME-style.zip
+```
+
+To let other repositories download your style package, you need to publish `ORG_NAME-style.zip` at a public link. The easiest way to do this is to create a release on your Git hosting service. To create a release on GitHub, first push the `vale-style` repository to GitHub if you haven't already. Then use one of these two methods:
+
+- **On GitHub:** In your repository, select **Releases**, then **Draft a new release**. Choose a tag, like `v1.0.0`, attach `ORG_NAME-style.zip`, and select **Publish release**.
+- **From your terminal:** If you have the [GitHub CLI](https://cli.github.com) installed and signed in with `gh auth login`, run this from the root of the `vale-style` repository, in the same terminal you used to zip the folder:
+
+```bash
+gh release create v1.0.0 ORG_NAME-style.zip --title v1.0.0 --notes "First release"
+```
+
+Your style package should now be available at a link like this:
+
+```text
+https://github.com/ORG_NAME/vale-style/releases/download/v1.0.0/ORG_NAME-style.zip
+```
+
+GitLab, Bitbucket, and other Git hosting services have similar release features, so check their documentation for details on how to create a release. You can also upload the `.zip` to any web server or file storage that gives you a public link.
+
+### 8. Add your rules to each repository
+
+To check the content in another repository, create a file named `.vale.ini` at the root of that repository. Do this for every repository whose content you want Vale to check, like your docs repository and your marketing website's repository. Add the following settings to the file:
+
+```ini .vale.ini
+StylesPath = styles
+MinAlertLevel = suggestion
+Vocab = ORG_NAME
+
+Packages = Google, https://github.com/ORG_NAME/vale-style/releases/download/v1.0.0/ORG_NAME-style.zip
+
+[*.{md,mdx}]
+BasedOnStyles = Vale, Google, ORG_NAME
+ORG_NAME.TitleCase = NO
+```
+
+Replace the link under `Packages` with the link to your style package from step 7.
+
+With these settings, Vale checks every Markdown and MDX file in the repository against Vale's built-in style, Google's style guide, and your rules. These settings fit a docs repository, because docs usually follow Google's style guide as well as your own rules. For other kinds of content, you might want to make the following changes:
+
+- If a repository's content shouldn't follow Google's style guide, remove `Google` from both `Packages` and `BasedOnStyles`. Marketing websites are a common example, because their copy uses "we" and exclamation points on purpose, and Google's rules flag both.
+- If a repository's content uses title-case headings, delete the `ORG_NAME.TitleCase = NO` line. In a docs repository, that line stops your title-case rule from flagging headings that correctly use Google's sentence case. To turn off any other rule, add a line with the rule's name followed by `= NO`, like `ORG_NAME.Numerals = NO`.
+
+Refer to the [`.vale.ini` reference](https://docs.vale.sh/topics/.vale.ini) for other ways to set up your `.vale.ini`, and for a full list of the settings you can use.
+
+Next, download the style packages listed in your `.vale.ini` file to the repository you're working on. From the root of the repository, run:
+
+```bash
+vale sync
+```
+
+Vale creates a `styles` folder and saves the style packages in it. You must not commit this folder. Add the line below to your repository's `.gitignore` file so Git ignores the folder:
+
+```text .gitignore
+styles/
+```
+
+Now run Vale on the folder that holds your content. For example, if your website's content is in a `content` folder, run:
+
+```bash
+vale content
+```
+
+Vale flags anything that breaks your rules. For example, in a website repository that only uses your `ORG_NAME` rules, the output looks like this:
+
+```text Terminal
+ content/home.md
+ 3:13  error    Avoid using 'leverage'.                       Vale.Avoid
+ 3:27  error    Use 'console' instead of 'dashboard'.         ORG_NAME.PreferredTerms
+ 5:4   warning  'why teams choose us' should use title case.  ORG_NAME.TitleCase
+ 7:5   warning  Use a numeral instead of 'five'.              ORG_NAME.Numerals
+```
+
+<Tip>
+  Each `.vale.ini` links to one version of your style package, like `v1.0.0`. When you change a rule, publish a new release with a new version number, like `v1.1.0`. A repository only gets the new rules once you change its link to the new version, so a rule change never surprises a team in the middle of their work.
+</Tip>
+
+## Troubleshooting
+
+Here are some errors you might run into while following this guide, and how to fix them.
+
+### Vale says the StylesPath doesn't exist
+
+```text
+E201 Invalid value [.vale.ini:1:14]:
+
+   1* StylesPath = styles
+
+The StylesPath 'styles' doesn't exist.
+```
+
+You haven't downloaded the style packages to this repository yet. This often happens after someone clones the repository, because the `styles` folder isn't committed. To fix it, run `vale sync` from the root of the repository.
+
+### Style 'ORG_NAME' isn't on the StylesPath
+
+```text
+Style 'ORG_NAME' isn't on the StylesPath (styles). If it's a package, run `vale sync`.
+```
+
+If you've already run `vale sync`, the name in `BasedOnStyles` doesn't match the name of the style folder inside your style package. Vale matches the names exactly, including capital letters. Change the name in `BasedOnStyles` to match the folder, then run Vale again.
+
+### 'ORG_NAME' vocabulary not found
+
+```text
+E100 [vocab] Runtime error
+
+'ORG_NAME' vocabulary not found; searched: styles/config/vocabularies/ORG_NAME
+```
+
+The name in the `Vocab` line doesn't match the name of the folder under `config/vocabularies/` in your style package. Change one of them so they match exactly.
+
+### vale sync fails with "no such file or directory"
+
+```text
+lstat /var/folders/.../ORG_NAME-style: no such file or directory
+```
+
+The folder inside your `.zip` file doesn't have the same name as the `.zip` file. For example, `ORG_NAME-style.zip` must contain a folder named `ORG_NAME-style`. Rename the folder or the file so they match, zip the folder again, and publish a new release.
+
+### Vale checks 0 files
+
+```text
+✔ 0 errors, 0 warnings and 0 suggestions in 0 files.
+```
+
+No file in the folder you ran Vale on matches a section in your `.vale.ini`. If the section reads `[*.md]`, Vale skips `.mdx` files without telling you. Change the section to `[*.{md,mdx}]`, and check that you ran Vale on the folder that holds your content.
+
+### mapping values are not allowed in this context
+
+```text
+E201 Invalid value [styles/ORG_NAME/PreferredTerms.yml:10:1]:
+
+  10*   please note(?: that)?: Note
+
+mapping values are not allowed in this context
+```
+
+A word on the left of a `swap` line contains a colon followed by a space, which YAML reads as the start of a new setting. To fix it, put the word in quotes, like `'please note(?: that)?': Note`.
+
+### Vale still flags a word in your vocabulary
+
+Vocabulary entries are case-sensitive, so `Deploybot` in `accept.txt` doesn't accept "deploybot." If the word can appear in any case, start its entry with `(?i)`, like `(?i)deploybot`. If Vale flags every word in your vocabulary, check that your `.vale.ini` has a `Vocab` line.
+
+## Next steps
+
+Right now, Vale only runs when someone remembers to run it. To automate prose quality checks in your CI/CD pipeline, so that Vale runs whenever someone opens a pull request, add a job that installs Vale and runs `vale sync` and `vale` on your content folder.
+
+If you use GitHub Actions, refer to the [vale-action reference](https://github.com/vale-cli/vale-action) to set it up. If you use another CI/CD service, like CircleCI, refer to the [Integrations](https://docs.vale.sh/integrations) section of Vale's documentation for how to add a prose linting job to your CI/CD pipeline.

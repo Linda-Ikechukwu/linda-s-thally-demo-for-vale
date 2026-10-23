@@ -1,45 +1,85 @@
 ---
 title: Introduction
-description: Give readers a clear path from their first question to a result they can verify.
-mode: home
+description: What Vale does, who it's for, and how it works.
 ---
 
-<Hero
-  title="Build documentation around the reader"
-  subtitle="Start with a useful first result, organize what follows, and publish every format from one reviewable source."
-  primaryLabel="Get started"
-  primaryHref="/quickstart"
-  secondaryLabel="Publish your docs"
-  secondaryHref="/guides/create-a-site"
-/>
+**Vale is a free, open-source prose linter that checks writing, from documentation to blog posts and product pages, against a style guide, so everything a team ships reads consistently no matter who wrote it.**
 
-## Build the reader journey
+Point Vale at your content files, whether they're written in Markdown, MDX, AsciiDoc, reStructuredText, HTML, or [other supported formats](https://docs.vale.sh/formats), and it flags every line that breaks your style rules, from a banned word or a product name in the wrong case to a sentence that runs too long or a heading that isn't in sentence case.
 
-Begin with the task that brings most readers to your documentation, then make
-the next useful step obvious.
+For example, here's Vale's terminal output after checking a README against Google's developer style guide:
+
+```text Terminal
+ README.md
+ 7:1   warning  Use 'to' instead of 'In order to'.                Google.WordListCase
+ 9:1   warning  Use 'click' or 'click in' instead of 'Click on'.  Google.WordListCase
+```
+
+Developers have used linters for years to automatically catch code problems, like syntax errors and logic bugs, before anyone reviews the code. Vale does the same for prose.
+
+You choose the rules, either from a published style guide like Google's or Microsoft's or written by your team, and Vale applies them the same way every time.
+
+## Who is Vale for
+
+Vale is most useful for teams with many writers who need everything they publish to sound consistent.
+
+Imagine a company where 30 engineers contribute to documentation and release notes, 2 technical writers own the docs, and a marketing team publishes blog posts and product pages. The company has a style guide that says to write "sign in," not "login," never say "simply," spell it "GitHub," not "Github," use American English, and keep sentences short. In practice:
+
+- Nobody reads the style guide.
+- The writers and editors catch these issues in review and leave the same comments over and over, like "it's 'sign in', not 'login'."
+- What gets caught depends on who reviews and how tired they are.
+- The docs, blog and product pages end up inconsistent, and reviewers spend their time on commas instead of substance.
+
+With Vale, those rules run automatically on every change, before review. Everyone who writes gets feedback the moment they make a mistake, and reviewers can focus on whether the content is accurate and useful.
+
+Vale is useful for solo writers too. It's a second pair of eyes that never gets tired and never forgets a rule.
+
+## How Vale works
+
+Unlike tools like Grammarly and LanguageTool, Vale doesn't come with its own idea of good writing. It simply checks your writing against the rules your team sets, and flags it.
+
+Rules are small YAML files that live in your repository. And once you set up your rules, Vale checks your writing automatically, in your editor or on every pull request, so no one has to remember to run a review. That's its advantage over AI assistants, which only check what someone pastes in and asks them to review.
+
+For example, Linode's documentation team uses [a rule that keeps their product names consistent](https://github.com/linode/docs/blob/master/ci/vale/styles/Linode/Terms.yml). Here's part of it:
+
+```yaml Terms.yml
+extends: substitution
+message: Use '%s' instead of '%s'.
+level: error
+ignorecase: true
+swap:
+  kubernetes: Kubernetes
+  nodebalancer: NodeBalancer
+  wordpress: WordPress
+```
+
+Each line under `swap` pairs a spelling Vale looks for with the version it expects. So if someone writes "Nodebalancer," Vale flags it and suggests "NodeBalancer" instead.
+
+Vale rules can also check for a lot more than spelling:
+
+| Kind of rule | What it catches | Example |
+| --- | --- | --- |
+| Banned words or phrases | Words your style guide avoids | Flag "simply," "just," "please note," or exclamation marks |
+| Preferred terms | One term that should be another | "login" → "sign in," "Github" → "GitHub" |
+| Spelling | Typos, with a list of your own approved words | Flags "recieve," but accepts "Kubernetes" because you added it |
+| Capitalization | Casing rules, including for headings | "Headings must be sentence case," or product names always capitalized |
+| Punctuation | Comma and spacing conventions | Require the Oxford comma, no double spaces |
+| Repetition | Accidental doubled words | "the the" |
+| Consistency | Using two spellings in the same document | Mixing "advisor" and "adviser" |
+| Length limits | Sentences or paragraphs that run on | Flag sentences over 25 words |
+| Readability | A reading-level score | Warn if a page reads above a Grade 8 level |
+| Conditional | Something used without its required partner | An acronym like "SLA" that the page doesn't spell out first |
+| Custom scripts | Anything the others can't express | Small programs for checks unique to your team |
+
+To try Vale on your own files, follow the quickstart.
+
+## Get started
 
 <CardGroup cols="2">
-  <Card title="Write your quickstart" icon="party-horn" href="/quickstart">
-    Turn prerequisites, setup, one realistic task, and verification into a short path.
+  <Card title="Quickstart" icon="party-horn" href="/quickstart">
+    Install Vale and check your first file.
   </Card>
-  <Card title="Organize your navigation" icon="grid-round" href="/customization">
-    Group related tasks and references around how people use your product.
-  </Card>
-  <Card title="Document your API" icon="code-simple" href="/api">
-    Replace `openapi.yaml` to publish browsable endpoint docs with a live playground.
-  </Card>
-  <Card title="Learn the Thally workflow" icon="wrench" href="/guides/create-a-site">
-    Create, publish, and update sites from the Cloud dashboard, the CLI, or your AI tools.
+  <Card title="Add your style guide to Vale" icon="wrench" href="/guides/add-your-style-guide">
+    Turn your team's style guide into Vale rules.
   </Card>
 </CardGroup>
-
-## Publish from one source
-
-Thally turns the same reviewed content into HTML, search, agent discovery files,
-Markdown mirrors, and a read-only MCP surface — so people and AI tools read the
-same, current answer. Add only the locales your readers need.
-
-<Note type="info" title="Start with the product, not the template">
-  Replace this page with the questions, terminology, and workflows your readers
-  already use. Keep `docs.json` focused on the path between those tasks.
-</Note>

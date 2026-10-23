@@ -166,7 +166,6 @@ const templateSiteConfig: SiteConfig = {
   repoUrl: '',
   links: [
     { label: 'Get started', href: '/quickstart' },
-    { label: 'Changelog', href: '/changelog' },
   ],
   brand: brandPresets[brandPreset],
   brandPreset,

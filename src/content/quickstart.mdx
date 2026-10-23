@@ -1,47 +1,157 @@
 ---
 title: Quickstart
-description: Guide a new reader through one useful workflow and show them how to verify it.
+description: Install Vale and run your first lint against Google's style guide.
 ---
 
-A strong quickstart produces one meaningful result. Replace the placeholders
-below with the shortest supported path for your product.
+In this quickstart, you'll install Vale, set it up to use Google's developer documentation style guide, and check your first file. It takes about 10 minutes, and all you need to know is how to run commands in a terminal.
 
 ## Before you begin
 
-List only the requirements needed for this workflow:
+You need:
 
-- An account or credential, when required
-- A supported runtime, device, browser, or operating system
-- Permission to create or change the resource used in the example
+- A terminal on macOS, Windows, or Linux
+- An internet connection to download Google's style guide in step 4
+- An empty folder to work in
 
 <Steps>
-  <Step title="Install the required tool">
-    Give readers one recommended installation command.
+  <Step title="Install Vale">
+    Install Vale with your operating system's package manager.
+
+    <Tabs>
+      <Tab title="macOS">
+        ```bash
+        brew install vale
+        ```
+      </Tab>
+      <Tab title="Windows">
+        ```powershell
+        winget install -e --id errata-ai.Vale
+        ```
+      </Tab>
+      <Tab title="Linux">
+        ```bash
+        sudo snap install vale
+        ```
+      </Tab>
+    </Tabs>
+
+    Then check that it installed:
 
     ```bash
-    npm install your-package
+    vale --version
     ```
+
+    You should see `vale version 3.24.0` or later.
+
+    For other ways to install Vale, see the [official installation guide](https://docs.vale.sh/install).
   </Step>
-  <Step title="Add the minimum configuration">
-    Include only the values needed for the first successful run.
+
+  <Step title="Create a sample file">
+    In your empty folder, create a file named `README.md` and paste in this text:
+
+    ```markdown README.md
+    # Acme
+
+    Acme is a tool that deploys your app.
+
+    ## Install
+
+    In order to install Acme, run the following command.
+
+    Click on the button below to get started.
+    ```
+
+    It contains two phrases that Google's style guide tells writers to avoid, "In order to" and "Click on." Vale should catch both.
+  </Step>
+
+  <Step title="Add a configuration file">
+    Create a file named `.vale.ini` in the same folder as your `README.md` file. Vale won't run without this configuration file. It tells Vale which rules to use and which files to check.
+
+    Paste in these settings:
+
+    ```ini .vale.ini
+    StylesPath = styles
+    MinAlertLevel = suggestion
+
+    Packages = Google
+
+    [*.{md,mdx}]
+    BasedOnStyles = Vale, Google
+    ```
+
+    Here's what each setting does:
+
+    | Setting | What it does |
+    | --- | --- |
+    | `StylesPath` | Sets the folder where Vale keeps its rules |
+    | `MinAlertLevel` | Sets the lowest severity Vale reports, from `suggestion` to `warning` to `error` |
+    | `Packages` | Lists the published style guides to download, in this case Google's |
+    | `[*.{md,mdx}]` | Applies the settings below it to Markdown and MDX files |
+    | `BasedOnStyles` | Lists the style guides to check your files against. `Vale` is Vale's built-in style guide, which includes a spell checker. `Google` is Google's style guide, which you download in the next step |
+  </Step>
+
+  <Step title="Download Google's style guide">
+    Run this command to download Google's style guide:
 
     ```bash
-    your-cli init
+    vale sync
+    ```
+
+    Vale has a [package library](https://github.com/vale-cli/packages) of more than 20 ready-made rule sets and style guides, including Google's, Microsoft's, and Red Hat's. The `vale sync` command installs whichever packages you list under `Packages` in your `.vale.ini` file, and saves them in the folder you set in `StylesPath`, in this case `styles`.
+
+    You should see something like this:
+
+    ```text Terminal
+    SUCCESS  Synced 1 package(s) to '/path/to/your/folder/styles'.
     ```
   </Step>
-  <Step title="Complete the first task">
-    Use a realistic example that produces an observable result.
+
+  <Step title="Check the file">
+    Run Vale on your README:
 
     ```bash
-    your-cli start
+    vale README.md
     ```
+
+    Vale lists every problem it finds, one per line:
+
+    ```text Terminal
+     README.md
+     7:1  warning  Use 'to' instead of 'In order to'.                Google.WordListCase
+     9:1  warning  Use 'click' or 'click in' instead of 'Click on'.  Google.WordListCase
+
+    ✖ 0 errors, 2 warnings and 0 suggestions in 1 file.
+    ```
+
+    Each line tells you where the problem is, how serious it is, what to change, and which rule flagged it. So the first line means that on line 7, column 1, Google's style guide prefers "to" over "In order to."
   </Step>
-  <Step title="Verify the result">
-    State exactly what the reader should see and how to recover when it does not appear.
+
+  <Step title="Fix the warnings and check again">
+    In `README.md`, make the two changes Vale suggested:
+
+    - On line 7, change "In order to install Acme" to "To install Acme."
+    - On line 9, change "Click on the button" to "Click the button."
+
+    Then run Vale again:
+
+    ```bash
+    vale README.md
+    ```
+
+    This time, Vale has nothing to flag:
+
+    ```text Terminal
+    ✔ 0 errors, 0 warnings and 0 suggestions in 1 file.
+    ```
+
+    Congratulations! Vale is now checking your writing against Google's style guide.
   </Step>
 </Steps>
 
-## Choose the next task
+## Next steps
 
-Link to the guide that naturally follows this result. Avoid ending the reader’s
-journey with a generic list of every feature.
+Google's style guide is a good starting point, but your team probably has its own terms and rules. To check your content against those too, add your organization's style guide to Vale.
+
+<Card title="Add your style guide to Vale" icon="wrench" href="/guides/add-your-style-guide">
+  Turn your team's style guide into Vale rules.
+</Card>

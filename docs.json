@@ -15,54 +15,25 @@
       }
     ]
   },
-  "navbar": {
+    "navbar": {
     "primary": {
-      "label": "Get started",
+      "label": "Run your first lint",
       "href": "/quickstart"
     }
   },
   "tabs": [
     {
-      "tab": "Get started",
+      "tab": "Docs",
       "groups": [
         {
           "group": "Get started",
           "pages": ["introduction", "quickstart"]
         },
         {
-          "group": "Design your docs",
-          "pages": ["components", "customization"]
+          "group": "Guides",
+          "pages": ["guides/add-your-style-guide"]
         }
       ]
-    },
-    {
-      "tab": "Guides",
-      "groups": [
-        {
-          "group": "Work with Thally",
-          "pages": [
-            "guides/create-a-site",
-            "guides/work-with-the-cli",
-            "guides/connect-ai-tools"
-          ]
-        }
-      ]
-    },
-    {
-      "tab": "API Reference",
-      "groups": [
-        {
-          "group": "Overview",
-          "pages": ["api/introduction", "api/authentication"]
-        }
-      ],
-      "api": {
-        "source": "openapi.yaml"
-      }
-    },
-    {
-      "tab": "Changelog",
-      "href": "/changelog"
     }
   ]
 }
