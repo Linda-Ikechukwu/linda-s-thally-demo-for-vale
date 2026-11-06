@@ -1,0 +1,40 @@
+name: Vale
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/content/**"
+      - ".vale.ini"
+      - ".github/vale/**"
+      - ".github/workflows/vale.yml"
+  pull_request:
+    paths:
+      - "src/content/**"
+      - ".vale.ini"
+      - ".github/vale/**"
+      - ".github/workflows/vale.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+jobs:
+  vale:
+    name: Lint docs prose
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Installs Vale, runs `vale sync` (downloads the Google package listed
+      # in .vale.ini), then lints every page under src/content.
+      - uses: errata-ai/vale-action@v3.0.0
+        with:
+          version: 3.24.0
+          files: src/content
+          filter_mode: nofilter
+          fail_on_error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
