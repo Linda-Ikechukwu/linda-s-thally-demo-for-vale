@@ -5,11 +5,11 @@
   "defaultBranch": "main",
   "runtime": {
     "repository": "thallylabs/thally",
-    "commitSha": "2e0943562b12047c446a4e48c2a5570b0dd3de26",
-    "treeSha": "b826863b2077d4f87fbf757be5c5f6770edcb0b4"
+    "commitSha": "d8345dda03189ba1d75810b5310117c5cd9c3f6d",
+    "treeSha": "0a0831d9802d3614e4f4d11704e637ed04284ca3"
   },
   "packages": {
-    "@thallylabs/core": "^0.2.17"
+    "@thallylabs/core": "^0.2.18"
   },
   "ownership": {
     "frameworkSyncEligible": [
@@ -43,7 +43,8 @@
       "scripts/lib/**",
       "scripts/check-cloudflare-worker-size.mts",
       "scripts/smoke-cloudflare.mts",
-      "scripts/mint-reader-token.ts"
+      "scripts/mint-reader-token.ts",
+      "src/mdx/grammars/**"
     ],
     "userOwnedNeverOverwrite": [
       "src/content/**",
